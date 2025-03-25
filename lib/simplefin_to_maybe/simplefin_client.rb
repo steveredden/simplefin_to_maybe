@@ -37,18 +37,18 @@ module SimpleFINToMaybe
     def get_all_accounts
       query_params = { "balances-only" => 1 }
       response = invoke_request("/accounts", query_params)
-      response.dig("accounts") || []
+      return response.dig("accounts") || []
     end
 
     # Method to fetch all transactions for a specific account within a date range
-    def get_all_transactions(account_id, start_date = get_first_of_month(epoch: true), end_date = get_epoch_of_tomorrow())
+    def get_single_account(account_id, start_date = get_first_of_month(epoch: true), end_date = get_epoch_of_tomorrow())
       query_params = {
         "start-date" => start_date,
         "end-date" => end_date,
         "account" => URI.encode_www_form_component(account_id)
       }
       response = invoke_request("/accounts", query_params)
-      response.dig("accounts", 0, "transactions") || []
+      return response.dig("accounts", 0) || []
     end
 
     private
@@ -57,7 +57,11 @@ module SimpleFINToMaybe
     def handle_response(response)
       case response.code.to_i
       when 200
-        JSON.parse(response.body)
+        output = JSON.parse(response.body)
+        output.dig("errors").each do |errorLine|
+          puts errorLine
+        end
+        return output
       else
         raise "Error: #{response.code} - #{response.body}"
       end

@@ -1,0 +1,48 @@
+{
+    "errors": [],
+    "accounts": [
+      {
+        "org": {
+          "domain": "www.ameriprise.com",
+          "name": "Ameriprise Financial",
+          "sfin-url": "https://beta-bridge.simplefin.org/simplefin",
+          "url": "https://www.ameriprise.com",
+          "id": "www.ameriprise.com"
+        },
+        "id": "ACT-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "name": "Example Brokerage Name",
+        "currency": "USD",
+        "balance": "123.45",
+        "available-balance": "0.00",
+        "balance-date": 1742896930,
+        "transactions": [],
+        "holdings": [
+          {
+            "id": "HOL-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "created": 1741090181,
+            "currency": "USD",
+            "cost_basis": "123.45",
+            "description": "FIDELITY ADVISOR CAPITAL & INCOME CL I",
+            "market_value": "234.56",
+            "purchase_price": "0.00",
+            "shares": "123.45",
+            "symbol": "FAHCX"
+          },
+          {
+            "id": "HOL-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "created": 1741090181,
+            "currency": "USD",
+            "cost_basis": "123.45",
+            "description": "PALANTIR TECHNOLOGIES INC CL A",
+            "market_value": "234.56",
+            "purchase_price": "0.00",
+            "shares": "123.45",
+            "symbol": "PLTR"
+          }
+        ]
+      }
+    ],
+    "x-api-message": [
+      "Provide a 'start-date' parameter to receive transactions prior to yesterday"
+    ]
+  }

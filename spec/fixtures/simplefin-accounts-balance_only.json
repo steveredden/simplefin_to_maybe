@@ -1,0 +1,76 @@
+{
+    "errors": [
+      "Connection to Institution Name1 may need attention",
+      "Connection to Institution Name2 may need attention"
+    ],
+    "accounts": [
+      {
+        "org": {
+          "domain": "www.capitalone.com",
+          "name": "Capital One",
+          "sfin-url": "https://beta-bridge.simplefin.org/simplefin",
+          "url": "https://www.capitalone.com",
+          "id": "www.capitalone.com"
+        },
+        "id": "ACT-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "name": "Example Credit Card Name",
+        "currency": "USD",
+        "balance": "-388.76",
+        "available-balance": "0.00",
+        "balance-date": 1742860176,
+        "transactions": [],
+        "holdings": []
+      },
+      {
+        "org": {
+          "domain": "www.capitalone.com",
+          "name": "Capital One",
+          "sfin-url": "https://beta-bridge.simplefin.org/simplefin",
+          "url": "https://www.capitalone.com",
+          "id": "www.capitalone.com"
+        },
+        "id": "ACT-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "name": "Example Checking Account Name",
+        "currency": "USD",
+        "balance": "123.45",
+        "available-balance": "0.00",
+        "balance-date": 1742774038,
+        "transactions": [],
+        "holdings": []
+      },
+      {
+        "org": {
+          "domain": "www.truist.com",
+          "name": "Truist",
+          "sfin-url": "https://beta-bridge.simplefin.org/simplefin",
+          "url": "https://www.truist.com/",
+          "id": "www.truist.com"
+        },
+        "id": "ACT-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "name": "Example Mortgate Name",
+        "currency": "USD",
+        "balance": "-123.45",
+        "available-balance": "0.00",
+        "balance-date": 1742852424,
+        "transactions": [],
+        "holdings": []
+      },
+      {
+        "org": {
+          "domain": "nb.fidelity.com",
+          "name": "Fidelity 401k",
+          "sfin-url": "https://beta-bridge.simplefin.org/simplefin",
+          "url": "https://nb.fidelity.com/public/nb/401k/home",
+          "id": "nb.fidelity.com"
+        },
+        "id": "ACT-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "name": "Example Retirement Account",
+        "currency": "USD",
+        "balance": "123.45",
+        "available-balance": "234.56",
+        "balance-date": 1742747953,
+        "transactions": [],
+        "holdings": []
+      }
+    ]
+  }

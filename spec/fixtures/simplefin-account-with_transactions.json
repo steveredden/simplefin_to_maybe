@@ -1,0 +1,50 @@
+{
+    "errors": [],
+    "accounts": [
+      {
+        "org": {
+          "domain": "www.chase.com",
+          "name": "Chase Bank",
+          "sfin-url": "https://beta-bridge.simplefin.org/simplefin",
+          "url": "https://www.chase.com",
+          "id": "www.chase.com"
+        },
+        "id": "ACT-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "name": "Example Credit Card Name",
+        "currency": "USD",
+        "balance": "-123.45",
+        "available-balance": "0.00",
+        "balance-date": 1742832878,
+        "transactions": [
+          {
+            "id": "TRN-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "posted": 1742725952,
+            "amount": "-12.34",
+            "description": "AMAZON MKTPL*AAAAAAAAA",
+            "payee": "Amazon",
+            "memo": "",
+            "transacted_at": 1742499338
+          },
+          {
+            "id": "TRN-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "posted": 1741086989,
+            "amount": "-23.45",
+            "description": "AMAZON MKTPL*AAAAAAAAA",
+            "payee": "Amazon",
+            "memo": "",
+            "transacted_at": 1741034376
+          },
+          {
+            "id": "TRN-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "posted": 1741001381,
+            "amount": "67.89",
+            "description": "Amazon.com",
+            "payee": "Amazon",
+            "memo": "",
+            "transacted_at": 1740916800
+          }
+        ],
+        "holdings": []
+      }
+    ]
+  }

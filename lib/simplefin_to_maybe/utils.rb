@@ -68,4 +68,9 @@ def make_selection(input_object, print_property = "name", prompt = "Please selec
       puts "Invalid selection, please try again."
     end
   end
+
+  def get_purchase_price(cost_basis, share_count)
+    return cost_basis / share_count
+  end
+
 end

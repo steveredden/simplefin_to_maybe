@@ -55,7 +55,9 @@ The account linkage is saved within the PostgreSQL database, so during subsequen
 After completion be sure to manually `Sync Account` in the Maybe web interface:
 
 ![Sync Account](docs/assets/images/account-sync.png) \
-&nbsp;&nbsp;&nbsp;&nbsp;*Syncing forces balance calculations*
+&nbsp;&nbsp;&nbsp;&nbsp;*Syncing initiates balance re-calculations*
+
+It is also recommended to refresh your browser to render the new balances/sparklines/etc.
 
 ## Technical Details
 

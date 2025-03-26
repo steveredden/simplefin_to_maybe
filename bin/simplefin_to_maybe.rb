@@ -61,8 +61,10 @@ if simplefin_accounts.is_a?(Array)
       account_row = make_selection(unmatched_maybe_accounts, "name", "Please select a Maybe account to associate '#{simplefin_display_name}':")
 
       next if account_row.nil?  # skip iteration if we didn't make an association
-        maybe_account_id = maybe_client.new_simplefin_import(account_row, simplefin_id)
-        maybe_accounts = maybe_client.get_accounts(family_id)  # update accounts so the unmatched_maybe_accounts reflects new associations
+
+      maybe_account_id = maybe_client.new_simplefin_import(account_row, simplefin_id)
+      maybe_accounts = maybe_client.get_accounts(family_id)  # update accounts so the unmatched_maybe_accounts reflects new associations
+      maybe_account = account_row  # store over-top
     else
       maybe_account_id = maybe_account.dig("id")
       puts "Found associated Maybe account: #{maybe_account.dig("name")} (#{maybe_account_id})"
@@ -82,7 +84,7 @@ if simplefin_accounts.is_a?(Array)
 
     # get all transactions we've already sync'd into maybe
     start_date_mmddYY = get_first_of_month()
-    existing_maybe_transactions = maybe_client.get_simplefin_transactions(maybe_account_id, start_date_mmddYY)
+    existing_maybe_transactions = maybe_client.get_simplefin_tx_entries(maybe_account_id, start_date_mmddYY)
     puts "Found #{existing_maybe_transactions.length} Maybe transaction(s) for this account!"
 
     # loop through all simplefin transactions
@@ -90,8 +92,17 @@ if simplefin_accounts.is_a?(Array)
       puts "Skipping to next account..."
       next
     else
+
+      if maybe_account.dig("accountable_type") == "Investment"
+        enriched = enrich_transaction_vs_trade(simplefin_single_account)
+        redos = enriched.dig("redos")
+        
+        simplefin_transactions = [enriched.dig("transactions"), enriched.dig("trades")].compact.flatten
+      end
+
       if simplefin_transactions.is_a?(Array)
         puts "Inserting transaction(s)..."
+
         simplefin_transactions.each do |simplefin_transaction|
           transaction_id = simplefin_transaction.dig("id")
 
@@ -100,7 +111,14 @@ if simplefin_accounts.is_a?(Array)
             amount = simplefin_transaction.dig("amount")
             short_date = convert_timestamp_to_mmddyyyy(simplefin_transaction.dig("posted"))
             display_name = simplefin_transaction.dig("description")
-            maybe_client.new_transaction(maybe_account_id, amount, short_date, display_name, transaction_id)
+            ticker = simplefin_transaction.dig("ticker")
+            if ticker.nil?
+              maybe_client.new_transaction(maybe_account_id, amount, short_date, display_name, transaction_id)
+            else
+              quantity = simplefin_transaction.dig("quantity")
+              price = simplefin_transaction.dig("price")
+              maybe_client.new_trade(maybe_account_id, ticker, amount, quantity, price, short_date, display_name, transaction_id)
+            end
           end
         end
       end

@@ -21,16 +21,6 @@ module SimpleFINToMaybe
       puts "Connection error: #{e.message}"
     end
 
-    def execute(query, params = [])
-      begin
-        result = @connection.exec_params(query, params)
-        result.to_a
-      rescue PG::Error => e
-        puts "Query execution error: #{e.message}"
-        nil
-      end
-    end
-
     def get_families
       execute("SELECT id, name FROM public.families")
     end
@@ -58,7 +48,7 @@ module SimpleFINToMaybe
       execute(query, [family_id])
     end
     
-    def get_simplefin_transactions(account_id, start_date = get_first_of_month())
+    def get_simplefin_tx_entries(account_id, start_date = get_first_of_month())
       query = <<-SQL
         SELECT plaid_id FROM public.account_entries
         WHERE account_id = $1
@@ -69,6 +59,72 @@ module SimpleFINToMaybe
       execute(query, [account_id, start_date])
     end
 
+    def get_security(ticker)
+      query = <<-SQL
+        SELECT id, ticker
+        FROM public.securities
+        WHERE ticker = $1
+      SQL
+
+      return execute(query, [ticker])
+    end
+
+    def get_or_create_security(ticker)
+      result = get_security(ticker)
+
+      if result.any?
+        return result[0]
+      else
+
+        insert_query = <<-SQL
+          INSERT INTO public.securities (ticker, created_at, updated_at)
+          VALUES ($1, NOW(), NOW())
+          RETURNING *;
+        SQL
+        
+        result = execute(insert_query, [ticker])
+        return result[0]
+      end
+    end
+
+    def get_security_price(ticker, dateYYYYmmdd)
+      security_uuid = get_security(ticker)
+
+      return nil if security_uuid.nil?
+
+      query = <<-SQL
+        SELECT price FROM public.security_prices
+        WHERE security_id = $1 AND date = $2
+      SQL
+
+      return execute(query, [ticker, dateYYYYmmdd])
+    end
+
+    def get_account_holdings(account_id)
+      query = <<-SQL
+        SELECT DISTINCT ON (security_id)
+          ah.security_id,
+          s.ticker,
+          s.name,
+          ah.qty
+        FROM public.account_holdings AS ah
+        JOIN public.securities AS s
+          ON ah.security_id = s.id
+        WHERE ah.account_id = $1
+      SQL
+
+      execute(query, [account_id])
+    end
+
+    def match_other_transactions(transactions)
+      if transactions.is_a?(Array)
+        transactions.each do |tx|
+
+        end
+      end
+    end
+
+    #NOT USED ANYMORE... STUFFING INTO PLAID BREAKS TOO MANY THINGS!
     def new_simplefin_account(account_row, simplefin_account)
       # extract maybe information
       family_id = account_row.dig("family_id")
@@ -162,8 +218,47 @@ module SimpleFINToMaybe
       execute(query, [transaction_uuid])
     end
 
+    def new_trade(account_id, ticker, amount, quantity, price, short_date, display_name, simplefin_txn_id, currency = "USD")
+      trade_uuid = SecureRandom.uuid
+      adjusted_amount = BigDecimal(amount.to_s) * -1
+    
+      # Insert the account_entries entry
+      query = <<-SQL
+        INSERT INTO public.account_entries(
+          account_id, entryable_type, entryable_id, amount, currency, date, name, created_at, updated_at, plaid_id
+        ) VALUES (
+          $1, 'Account::Trade', $2, $3, $4, $5, $6, NOW(), NOW(), $7
+        );
+      SQL
+      execute(query, [account_id, trade_uuid, adjusted_amount, currency, short_date, display_name, simplefin_txn_id])
+
+      security_id = get_or_create_security(ticker).dig("id")
+    
+      # Insert the account_transaction entry
+      query = <<-SQL
+        INSERT INTO public.account_trades(
+          id, security_id, qty, price, created_at, updated_at, currency
+        ) VALUES (
+          $1, $2, $3, $4, NOW(), NOW(), $5
+        );
+      SQL
+      execute(query, [trade_uuid, security_id, quantity, price, currency])
+    end
+
     def close
       @connection.close if @connection
+    end
+
+    private
+    
+    def execute(query, params = [])
+      begin
+        result = @connection.exec_params(query, params)
+        result.to_a
+      rescue PG::Error => e
+        puts "Query execution error: #{e.message}"
+        nil
+      end
     end
 
   end

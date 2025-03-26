@@ -68,7 +68,7 @@ if simplefin_accounts.is_a?(Array)
 
     # get all transactions we've already sync'd into maybe
     start_date_mmddYY = get_first_of_month()
-    existing_maybe_transactions = maybe_client.get_simplefin_transactions(maybe_account_id, start_date_mmddYY)
+    existing_maybe_transactions = maybe_client.get_simplefin_tx_entries(maybe_account_id, start_date_mmddYY)
     puts "Found #{existing_maybe_transactions.length} Maybe transaction(s) for this account!"
 
     # loop through all simplefin transactions

@@ -6,6 +6,7 @@ gem "rspec"
 
 gem "activemodel"
 gem "bigdecimal"
+gem "colorize"
 gem "dotenv"
 gem "http"
 gem "pg"

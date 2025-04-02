@@ -65,25 +65,98 @@ class MaybeClient
     execute(query, [account_id, start_date])
   end
 
-  #def new_simplefin_import(account_row, simplefin_account_id)
-  #  family_id = account_row.maybe_family_id
-  #  account_id = account_row.identifier
-  #
-  #  query = <<-SQL
-  #    INSERT INTO public.imports(id, family_id, account_id, created_at, updated_at, type, status) 
-  #    VALUES ($1, $2, $3, NOW(), NOW(), 'MintImport', 'importing')
-  #    RETURNING id;
-  #  SQL
-  #  execute(query, [simplefin_account_id, family_id, account_id])
-  #
-  #  query = <<-SQL
-  #    UPDATE public.accounts 
-  #    SET import_id = $1 
-  #    WHERE id = $2;
-  #  SQL
-  #  execute(query, [simplefin_account_id, account_id])
-  #  return
-  #end
+  def get_securities
+    execute("SELECT id, ticker, name FROM public.securities")
+  end
+
+  def get_security(security_id)
+    query = <<-SQL
+      SELECT
+        id,
+        ticker,
+        name
+      FROM public.securities
+      WHERE id = $1;
+    SQL
+  
+    execute(query, [security_id])
+  end
+
+  def get_security_by_ticker(ticker)
+    query = <<-SQL
+      SELECT
+        id,
+        ticker,
+        name
+      FROM public.securities
+      WHERE ticker = $1;
+    SQL
+  
+    execute(query, [ticker])
+  end
+
+  def get_account_holdings(account_id)
+    query = <<-SQL
+      SELECT
+        ah.id,
+        ah.security_id,
+        s.ticker,
+        ah.date,
+        ah.qty,
+        ah.price,
+        ah.amount,
+        ah.currency
+      FROM public.account_holdings as ah
+      JOIN public.securities as s
+        ON ah.security_id = s.id
+      WHERE account_id = $1 AND date = CURRENT_DATE;
+    SQL
+
+    execute(query, [account_id])
+  end
+
+  def get_account_holdings_by_ticker(account_id, date, ticker)
+    query = <<-SQL
+      SELECT
+        ah.id,
+        ah.security_id,
+        s.ticker,
+        ah.date,
+        ah.qty,
+        ah.price,
+        ah.amount,
+        ah.currency
+      FROM public.account_holdings as ah
+      JOIN public.securities as s
+        ON ah.security_id = s.id
+      WHERE
+        ah.account_id = $1 AND
+        ah.date = (TO_TIMESTAMP($2)::DATE) AND
+        s.ticker = $3;
+    SQL
+
+    execute(query, [account_id, date, ticker])
+  end
+
+  def new_security(ticker, display_name)
+    query = <<-SQL
+      INSERT INTO public.securities(
+        ticker, name, created_at, updated_at
+      ) VALUES (
+        $1, $2, NOW(), NOW()
+      )
+      RETURNING id;
+    SQL
+    execute(query, [ticker, display_name])
+  end
+
+  def find_or_create_security(ticker, display_name)
+    security_id = get_security_by_ticker(ticker).first&.dig("id")
+    if security_id.nil?
+      security_id = new_security(ticker, display_name)
+    end
+    return security_id
+  end
 
   def upsert_account_valuation(account_id, simplefin_account)
     valuation_uuid = SecureRandom.uuid
@@ -171,6 +244,38 @@ class MaybeClient
       );
     SQL
     execute(query, [transaction_uuid])
+  end
+
+  def new_trade(account_id, simplefin_transaction_record, security_id, ticker, quantity, currency)
+    amount = simplefin_transaction_record.dig("amount")
+    adjusted_amount = BigDecimal(amount.to_s) * -1
+    short_date = simplefin_transaction_record.dig("posted")
+    direction = adjusted_amount > 0 ? "Buy" : "Sell"
+    display_name = "#{direction} #{quantity} shares of #{ticker}"
+    simplefin_txn_id = simplefin_transaction_record.dig("id")
+
+    trade_uuid = SecureRandom.uuid
+    price = adjusted_amount/quantity
+
+    # Insert the account_entries entry
+    query = <<-SQL
+      INSERT INTO public.account_entries(
+        account_id, entryable_type, entryable_id, amount, currency, date, name, created_at, updated_at, plaid_id
+      ) VALUES (
+        $1, 'Account::Trade', $2, $3, $4, (TO_TIMESTAMP($5)::DATE), $6, NOW(), NOW(), $7
+      );
+    SQL
+    execute(query, [account_id, trade_uuid, adjusted_amount, currency, short_date, display_name, simplefin_txn_id])
+
+    # Insert the account_trade entry
+    query = <<-SQL
+      INSERT INTO public.account_trades(
+        id, security_id, qty, price, currency, created_at, updated_at
+      ) VALUES (
+        $1, $2, $3, $4, $5, NOW(), NOW()
+      );
+    SQL
+    execute(query, [trade_uuid, security_id, quantity, price, currency])
   end
 
   def close

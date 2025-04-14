@@ -41,17 +41,41 @@ class MaybeClient
   
     query = <<-SQL
       SELECT
-        id,
-        name,
-        family_id,
-        currency,
-        accountable_type,
-        subtype
-      FROM public.accounts
-      WHERE family_id = $1;
+        a.id,
+        a.name,
+        a.family_id,
+        a.currency,
+        a.accountable_type,
+        a.subtype,
+        pa.plaid_id
+      FROM public.accounts AS a
+      LEFT OUTER JOIN public.plaid_accounts AS pa
+        ON a.plaid_account_id = pa.id
+      WHERE a.family_id = $1;
     SQL
   
     execute(query, [family_id])
+  end
+
+  def get_account(account_id)
+  
+    query = <<-SQL
+      SELECT
+        a.id,
+        a.name,
+        a.family_id,
+        a.currency,
+        a.accountable_type,
+        a.subtype,
+        pa.plaid_id
+      FROM public.accounts AS a
+      LEFT OUTER JOIN public.plaid_accounts AS pa
+        ON a.plaid_account_id = pa.id
+      WHERE a.id = $1
+      LIMIT 1;
+    SQL
+  
+    execute(query, [account_id])&.first
   end
   
   def get_simplefin_transactions(account_id, start_date)
@@ -151,6 +175,40 @@ class MaybeClient
       );
     SQL
     execute(query, [transaction_uuid])
+  end
+
+  def new_plaid_account(maybe_account, simplefin_account)
+    # extract maybe information
+    family_id = maybe_account.dig("family_id")
+    account_id = maybe_account.dig("id")
+
+    # extra simplefin information
+    simplefin_org_uri = simplefin_account.dig("org", "url")
+    simplefin_org_id = simplefin_account.dig("org", "id")
+  
+    # Insert the plaid_items entry
+    plaid_items_uuid = SecureRandom.uuid
+    query = <<-SQL
+      INSERT INTO public.plaid_items(id, family_id, created_at, updated_at, institution_url, institution_id) 
+      VALUES ($1, $2, NOW(), NOW(), $3, $4);
+    SQL
+    execute(query, [plaid_items_uuid, family_id, simplefin_org_uri, simplefin_org_id])
+  
+    # Insert the plaid_accounts entry
+    plaid_account_uuid = SecureRandom.uuid
+    query = <<-SQL
+      INSERT INTO public.plaid_accounts(id, plaid_item_id, created_at, updated_at) 
+      VALUES ($1, $2, NOW(), NOW());
+    SQL
+    execute(query, [plaid_account_uuid, plaid_items_uuid])
+  
+    # Update the accounts entry to point to the plaid_accounts.id
+    query = <<-SQL
+      UPDATE public.accounts 
+      SET plaid_account_id = $1 
+      WHERE id = $2;
+    SQL
+    execute(query, [plaid_account_uuid, account_id])
   end
 
   def close

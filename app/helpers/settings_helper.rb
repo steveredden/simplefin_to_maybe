@@ -40,4 +40,8 @@ module SettingsHelper
   def synchronization_schedule_information
     "Cron schedule expression for automatically syncing"
   end
+
+  def institution_icons_information
+    "Update the Maybe account icons for each institution retrieved from SimpleFIN"
+  end
 end

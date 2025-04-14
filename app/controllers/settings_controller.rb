@@ -8,6 +8,7 @@ class SettingsController < ApplicationController
   # Display all settings
   def index
     @settings = Setting.all
+    @good_jobs = GoodJob::Job.all
   end
 
   # Update setting in the database
@@ -70,7 +71,56 @@ class SettingsController < ApplicationController
     end
   end
 
+  def add_institution_icons
+
+    simplefin_client, maybe_client = init_sf_and_maybe
+
+    return if simplefin_client.nil? or maybe_client.nil?
+
+    Linkage.all.each do |link|
+      simplefin_response = simplefin_client.get_account(Account.find_by(id: link.simplefin_account_id).identifier)
+      if simplefin_response[:success]
+        simplefin_account = simplefin_response.dig(:response, "accounts", 0)
+        maybe_account = maybe_client.get_account(Account.find_by(id: link.maybe_account_id).identifier)
+        Rails.logger.info maybe_account.inspect
+        if maybe_account['plaid_id'].nil?
+          maybe_client.new_plaid_account(maybe_account, simplefin_account)
+        end
+      end
+    end
+  end
+
+  def remove_institution_icons
+    maybe_client = MaybeClientService.connect
+    if maybe_client
+      Linkage.all.each do |link|
+        maybe_account = maybe_client.get_account(Account.find_by(id: link.maybe_account_id).identifier)
+      end
+    end
+  end
+
   private
+
+  def init_sf_and_maybe
+    username = Setting.find_by(key: 'simplefin_username')&.value
+    password = Setting.find_by(key: 'simplefin_password')&.value
+
+    if username.blank? || password.blank?
+      Rails.logger.warn "Missing SimpleFIN username or password!"
+      render plain: "Username or password not set."
+      return nil, nil
+    end
+
+    simplefin_client = SimplefinClient.new(username, password)
+
+    maybe_client = MaybeClientService.connect
+    if !maybe_client
+      maybe_client.close
+      return nil, nil
+    end
+
+    return simplefin_client, maybe_client
+  end
 
   def cache_accounts(accounts, account_type)
 

@@ -87,3 +87,30 @@ input:checked + .block + .dot {
   font-size: 24px;
   cursor: pointer;
 }
+
+.settings-container {
+  display: flex;
+}
+
+.settings-left-section {
+  flex: 0 0 35%;
+  padding: 10px;
+}
+
+.settings-right-section {
+  flex: 0 0 65%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.settings-right-top, .settings-right-bottom {
+  flex: 1;
+  padding: 20px;
+}
+
+.scrollable-frame {
+  max-height: 400px; /* Set a fixed height for the table container */
+  overflow-y: auto;  /* Allow vertical scrolling if the table content overflows */
+  margin-top: 20px; /* Optional: Add some spacing from the top */
+}

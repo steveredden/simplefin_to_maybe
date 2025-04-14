@@ -1,200 +1,224 @@
 <br>
-<h2 class="text-2xl font-semibold mb-4">SimpleFIN Settings</h2>
-<table class="bg-white shadow-md rounded-lg overflow-hidden">
-  <thead>
-    <tr class="bg-gray-200">
-      <th class="py-2 px-4 border-b text-left">Setting</th>
-      <th class="py-2 px-4 border-b text-center"></th>
-      <th class="py-2 px-4 border-b text-right">Value</th>
-      <th class="py-2 px-4 border-b text-center"></th>
-    </tr>
-  </thead>
-  <tbody>
-    <% ["simplefin_username", "simplefin_password"].each do |key| %>
-      <% setting = Setting.find_by(key: key) %>
-      <% if setting %>
+<div class="settings-container">
+  <div class="settings-left-section">
+    <h2 class="text-2xl font-semibold mb-4">SimpleFIN Settings</h2>
+    <table class="bg-white shadow-md rounded-lg overflow-hidden">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="py-2 px-4 border-b text-left">Setting</th>
+          <th class="py-2 px-4 border-b text-center"></th>
+          <th class="py-2 px-4 border-b text-right">Value</th>
+          <th class="py-2 px-4 border-b text-center"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% ["simplefin_username", "simplefin_password"].each do |key| %>
+          <% setting = Setting.find_by(key: key) %>
+          <% if setting %>
+            <tr class="hover:bg-gray-100">
+              <td class="py-2 px-4 border-b text-left"><%= setting.display_name %> <span class="tooltip-icon" data-tooltip="<%= send("#{key}_information") %>">ⓘ</span></td>
+              <td class="py-2 px-4 border-b text-center"><i class="fas fa-arrows-left-right text-gray-500" /></td>
+              <td class="py-2 px-4 border-b text-right">
+                <% if setting.value.present? %>
+                  *********
+                <% else %>
+                  <span class="blinking-undefined">undefined</span>
+                <% end %>
+              </td>
+              <td class="py-2 px-4 border-b text-center">
+                <button class="openModalBtn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+                  display-name="<%= setting.display_name %>"
+                  data-key="<%= setting.key %>"
+                  data-value="<%= setting.value %>">
+                  Edit
+                </button>
+              </td>
+            </tr>
+          <% end %>
+        <% end %>
         <tr class="hover:bg-gray-100">
-          <td class="py-2 px-4 border-b text-left"><%= setting.display_name %> <span class="tooltip-icon" data-tooltip="<%= send("#{key}_information") %>">ⓘ</span></td>
-          <td class="py-2 px-4 border-b text-center"><i class="fas fa-arrows-left-right text-gray-500" /></td>
+          <td class="py-2 px-4 border-b text-left">Accounts Retrieved</td>
+          <td class="py-2 px-4 border-b text-center"><i class="fas fa-arrow-right text-gray-500" /></td>
           <td class="py-2 px-4 border-b text-right">
-            <% if setting.value.present? %>
-              *********
-            <% else %>
-              <span class="blinking-undefined">undefined</span>
+            <%= link_to accounts_path, id: "simplefin-count-display", class: "text-blue-500 hover:text-blue-700 p-1.5" do %>
+              <%= Account.where(account_type: "simplefin").count %>
             <% end %>
           </td>
-          <td class="py-2 px-4 border-b text-center">
-            <button class="openModalBtn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-              display-name="<%= setting.display_name %>"
-              data-key="<%= setting.key %>"
-              data-value="<%= setting.value %>">
-              Edit
-            </button>
-          </td>
+          <td class="py-2 px-4 border-b text-center"><button class="text-white px-4 py-2 rounded">|</button></td>
         </tr>
+      </tbody>
+    </table>
+
+    <br>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" id="test_simplefin_button">Retrieve SimpleFIN Accounts</button>
+    <img id="simplefin_loading_spinner" style="display: none;" src="<%= asset_path('fe718d-transparent-spinner.gif') %>" alt="Loading..." class="spinner" />
+    <br><div id="simplefin_test_result"></div><br><br>
+
+    <!-- Database Settings Table -->
+    <h2 class="text-2xl font-semibold mb-4">Maybe Settings</h2>
+    <table class="bg-white shadow-md rounded-lg overflow-hidden">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="py-2 px-4 border-b text-left">Setting</th>
+          <th class="py-2 px-4 border-b text-center"></th>
+          <th class="py-2 px-4 border-b text-right">Value</th>
+          <th class="py-2 px-4 border-b text-center"></th>
+        </tr>
+      </thead>
+      <tbody>
+      <% settings = [
+        { maybe_postgres_host: "127.0.0.1" },
+        { maybe_postgres_port: "5432" },
+        { maybe_postgres_db: "maybe" },
+        { maybe_postgres_user: "maybe" }] %>
+      <% settings.each do |hash| %>
+        <% hash.each do |key, default| %>
+          <% setting = Setting.find_by(key: key.to_s) %>
+          <% value = setting&.value.presence || default %>
+          <% is_default = setting&.value.blank? %>
+          <tr class="hover:bg-gray-100">
+            <td class="py-2 px-4 border-b text-left"><%= setting.display_name %> <span class="tooltip-icon" data-tooltip="<%= send("#{key}_information") %>">ⓘ</span></td>
+            <td class="py-2 px-4 border-b text-center"><i class="fas fa-arrows-left-right text-gray-500" /></td>
+            <td class="py-2 px-4 border-b text-right <%= "text-gray-400" if is_default %>">
+              <%= value %>
+            </td>
+            <td class="py-2 px-4 border-b text-center">
+              <button class="openModalBtn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+                display-name="<%= setting&.display_name || key.to_s.humanize %>" 
+                data-key="<%= key %>" 
+                data-value="<%= value %>">
+                Edit
+              </button>
+            </td>
+          </tr>
+        <% end %>
       <% end %>
-    <% end %>
-    <tr class="hover:bg-gray-100">
-      <td class="py-2 px-4 border-b text-left">Accounts Retrieved</td>
-      <td class="py-2 px-4 border-b text-center"><i class="fas fa-arrow-right text-gray-500" /></td>
-      <td class="py-2 px-4 border-b text-right">
-        <%= link_to accounts_path, id: "simplefin-count-display", class: "text-blue-500 hover:text-blue-700 p-1.5" do %>
-          <%= Account.where(account_type: "simplefin").count %>
+        <% setting = Setting.find_by(key: "maybe_postgres_password") %>
+        <% if setting %>
+          <tr class="hover:bg-gray-100">
+            <td class="py-2 px-4 border-b text-left"><%= setting.display_name %> <span class="tooltip-icon" data-tooltip="<%= send("maybe_postgres_password_information") %>">ⓘ</span></td>
+            <td class="py-2 px-4 border-b text-center"><i class="fas fa-arrows-left-right text-gray-500" /></td>
+            <td class="py-2 px-4 border-b text-right">
+              <% if setting.value.present? %>
+                *********
+              <% else %>
+                <span class="blinking-undefined">undefined</span>
+              <% end %>
+            </td>
+            <td class="py-2 px-4 border-b text-center">
+              <button class="openModalBtn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                display-name="<%= setting.display_name %>"
+                data-key="<%= setting.key %>"
+                data-value="<%= setting.value %>">
+                Edit
+              </button>
+            </td>
+          </tr>
         <% end %>
-      </td>
-      <td class="py-2 px-4 border-b text-center"><button class="text-white px-4 py-2 rounded">|</button></td>
-    </tr>
-  </tbody>
-</table>
-
-<br>
-<button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" id="test_simplefin_button">Retrieve SimpleFIN Accounts</button>
-<img id="simplefin_loading_spinner" style="display: none;" src="<%= asset_path('fe718d-transparent-spinner.gif') %>" alt="Loading..." class="spinner" />
-<br><div id="simplefin_test_result"></div><br><br>
-
-<!-- Database Settings Table -->
-<h2 class="text-2xl font-semibold mb-4">Maybe Settings</h2>
-<table class="bg-white shadow-md rounded-lg overflow-hidden">
-  <thead>
-    <tr class="bg-gray-200">
-      <th class="py-2 px-4 border-b text-left">Setting</th>
-      <th class="py-2 px-4 border-b text-center"></th>
-      <th class="py-2 px-4 border-b text-right">Value</th>
-      <th class="py-2 px-4 border-b text-center"></th>
-    </tr>
-  </thead>
-  <tbody>
-  <% settings = [
-    { maybe_postgres_host: "127.0.0.1" },
-    { maybe_postgres_port: "5432" },
-    { maybe_postgres_db: "maybe" },
-    { maybe_postgres_user: "maybe" }] %>
-  <% settings.each do |hash| %>
-    <% hash.each do |key, default| %>
-      <% setting = Setting.find_by(key: key.to_s) %>
-      <% value = setting&.value.presence || default %>
-      <% is_default = setting&.value.blank? %>
-      <tr class="hover:bg-gray-100">
-        <td class="py-2 px-4 border-b text-left"><%= setting.display_name %> <span class="tooltip-icon" data-tooltip="<%= send("#{key}_information") %>">ⓘ</span></td>
-        <td class="py-2 px-4 border-b text-center"><i class="fas fa-arrows-left-right text-gray-500" /></td>
-        <td class="py-2 px-4 border-b text-right <%= "text-gray-400" if is_default %>">
-          <%= value %>
-        </td>
-        <td class="py-2 px-4 border-b text-center">
-          <button class="openModalBtn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-            display-name="<%= setting&.display_name || key.to_s.humanize %>" 
-            data-key="<%= key %>" 
-            data-value="<%= value %>">
-            Edit
-          </button>
-        </td>
-      </tr>
-    <% end %>
-  <% end %>
-    <% setting = Setting.find_by(key: "maybe_postgres_password") %>
-    <% if setting %>
-      <tr class="hover:bg-gray-100">
-        <td class="py-2 px-4 border-b text-left"><%= setting.display_name %> <span class="tooltip-icon" data-tooltip="<%= send("maybe_postgres_password_information") %>">ⓘ</span></td>
-        <td class="py-2 px-4 border-b text-center"><i class="fas fa-arrows-left-right text-gray-500" /></td>
-        <td class="py-2 px-4 border-b text-right">
-          <% if setting.value.present? %>
-            *********
-          <% else %>
-            <span class="blinking-undefined">undefined</span>
-          <% end %>
-        </td>
-        <td class="py-2 px-4 border-b text-center">
-          <button class="openModalBtn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            display-name="<%= setting.display_name %>"
-            data-key="<%= setting.key %>"
-            data-value="<%= setting.value %>">
-            Edit
-          </button>
-        </td>
-      </tr>
-    <% end %>
-    <tr class="hover:bg-gray-100">
-      <td class="py-2 px-4 border-b text-left">Accounts Retrieved</td>
-      <td class="py-2 px-4 border-b text-center"><i class="fas fa-arrow-right text-gray-500" /></td>
-      <td class="py-2 px-4 border-b text-right">
-        <%= link_to accounts_path, id: "maybe-count-display", class: "text-blue-500 hover:text-blue-700 p-1.5" do %>
-          <%= Account.where(account_type: "maybe").count %>
-        <% end %>
-      </td>
-      <td class="py-2 px-4 border-b text-center"><button class="text-white px-4 py-2 rounded">|</button></td>
-    </tr>
-  </tbody>
-</table>
-
-<br>
-<button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" id="test_maybe_button">Retrieve Maybe Accounts</button>
-<img id="maybe_loading_spinner" style="display: none;" src="<%= asset_path('fe718d-transparent-spinner.gif') %>" alt="Loading..." class="spinner" />
-<br><div id="maybe_test_result"></div><br><br>
-
-<!-- Other Settings Table -->
-<h2 class="text-2xl font-semibold mb-4">Scheduling Settings</h2>
-<table class="bg-white shadow-md rounded-lg overflow-hidden">
-  <thead>
-    <tr class="bg-gray-200">
-      <th class="py-2 px-4 border-b text-left">Setting</th>
-      <th class="py-2 px-4 border-b text-center"></th>
-      <th class="py-2 px-4 border-b text-right">Value</th>
-      <th class="py-2 px-4 border-b text-center"></th>
-    </tr>
-  </thead>
-  <tbody>
-    <% settings = [{ lookback_days: "7" },{ synchronization_schedule: "Unscheduled" }] %>
-    <% settings.each do |hash| %>
-      <% hash.each do |key, default| %>
-        <% setting = Setting.find_by(key: key.to_s) %>
-        <% value = setting&.value.presence || default %>
-        <% if key.to_s == "synchronization_schedule" && value != "Unscheduled" %>
-          <% @cron_expression = value.to_s %>
-        <% else %>
-          <% @cron_expression = "0_19_*_*_*" %>
-        <% end %>
-        <% is_default = setting&.value.blank? %>
         <tr class="hover:bg-gray-100">
-          <td class="py-2 px-4 border-b text-left"><%= setting.display_name %> <span class="tooltip-icon" data-tooltip="<%= send("#{key}_information") %>">ⓘ</span></td>
-          <td class="py-2 px-4 border-b text-center"><i class="fas fa-arrows-left-right text-gray-500" /></td>
-          <td class="py-2 px-4 border-b text-right <%= "text-gray-400" if is_default %>">
-            <%= value %>
+          <td class="py-2 px-4 border-b text-left">Accounts Retrieved</td>
+          <td class="py-2 px-4 border-b text-center"><i class="fas fa-arrow-right text-gray-500" /></td>
+          <td class="py-2 px-4 border-b text-right">
+            <%= link_to accounts_path, id: "maybe-count-display", class: "text-blue-500 hover:text-blue-700 p-1.5" do %>
+              <%= Account.where(account_type: "maybe").count %>
+            <% end %>
           </td>
-          <td class="py-2 px-4 border-b text-center">
-            <button class="openModalBtn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-              display-name="<%= setting&.display_name || key.to_s.humanize %>" 
-              data-key="<%= key %>" 
-              data-value="<%= value %>">
-              Edit
-            </button>
-          </td>
+          <td class="py-2 px-4 border-b text-center"><button class="text-white px-4 py-2 rounded">|</button></td>
         </tr>
-      <% end %>
-    <% end %>
-    <tr class="hover:bg-gray-100">
-      <td class="py-2 px-4 border-b text-left">Next Sync Execution</td>
-      <td class="py-2 px-4 border-b text-center"><i class="fas fa-arrow-right text-gray-500" /></td>
-      <td class="py-2 px-4 border-b text-right">
-        <%= link_to "https://crontab.guru/##{@cron_expression.gsub(" ", "_")}", target: "_blank", rel: "noopener noreferrer", class: "text-blue-500 hover:text-blue-700 p-1.5" do %>
-          <% if @cron_expression == "0_19_*_*_*" %>
-            <%= "Unscheduled" %>
-          <% else %>
-            <%= Fugit::Cron.parse(@cron_expression).next_time.strftime("%Y-%m-%d %I:%M:%S %p") %>
+      </tbody>
+    </table>
+
+    <br>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" id="test_maybe_button">Retrieve Maybe Accounts</button>
+    <img id="maybe_loading_spinner" style="display: none;" src="<%= asset_path('fe718d-transparent-spinner.gif') %>" alt="Loading..." class="spinner" />
+    <br><div id="maybe_test_result"></div><br><br>
+
+    <!-- Other Settings Table -->
+    <h2 class="text-2xl font-semibold mb-4">Scheduling Settings</h2>
+    <table class="bg-white shadow-md rounded-lg overflow-hidden">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="py-2 px-4 border-b text-left">Setting</th>
+          <th class="py-2 px-4 border-b text-center"></th>
+          <th class="py-2 px-4 border-b text-right">Value</th>
+          <th class="py-2 px-4 border-b text-center"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% settings = [{ lookback_days: "7" },{ synchronization_schedule: "Unscheduled" }] %>
+        <% settings.each do |hash| %>
+          <% hash.each do |key, default| %>
+            <% setting = Setting.find_by(key: key.to_s) %>
+            <% value = setting&.value.presence || default %>
+            <% if key.to_s == "synchronization_schedule" && value != "Unscheduled" %>
+              <% @cron_expression = value.to_s %>
+            <% else %>
+              <% @cron_expression = "0_19_*_*_*" %>
+            <% end %>
+            <% is_default = setting&.value.blank? %>
+            <tr class="hover:bg-gray-100">
+              <td class="py-2 px-4 border-b text-left"><%= setting.display_name %> <span class="tooltip-icon" data-tooltip="<%= send("#{key}_information") %>">ⓘ</span></td>
+              <td class="py-2 px-4 border-b text-center"><i class="fas fa-arrows-left-right text-gray-500" /></td>
+              <td class="py-2 px-4 border-b text-right <%= "text-gray-400" if is_default %>">
+                <%= value %>
+              </td>
+              <td class="py-2 px-4 border-b text-center">
+                <button class="openModalBtn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+                  display-name="<%= setting&.display_name || key.to_s.humanize %>" 
+                  data-key="<%= key %>" 
+                  data-value="<%= value %>">
+                  Edit
+                </button>
+              </td>
+            </tr>
           <% end %>
         <% end %>
-      </td>
-      <td class="py-2 px-4 border-b text-center"><button class="text-white px-4 py-2 rounded">|</button></td>
-    </tr>
-  </tbody>
-</table>
-<br><br>
-
-<h2 class="text-2xl font-semibold mb-4">Danger Zone</h2>
-<%= button_to reset_database_path, method: :post, form: { class: "inline" }, class: "bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400" do %>
-  Reset Database
-<% end %>
-
-<br><br>
+        <tr class="hover:bg-gray-100">
+          <td class="py-2 px-4 border-b text-left">Next Sync Execution</td>
+          <td class="py-2 px-4 border-b text-center"><i class="fas fa-arrow-right text-gray-500" /></td>
+          <td class="py-2 px-4 border-b text-right">
+            <%= link_to "https://crontab.guru/##{@cron_expression.gsub(" ", "_")}", target: "_blank", rel: "noopener noreferrer", class: "text-blue-500 hover:text-blue-700 p-1.5" do %>
+              <% if @cron_expression == "0_19_*_*_*" %>
+                <%= "Unscheduled" %>
+              <% else %>
+                <%= Fugit::Cron.parse(@cron_expression).next_time.strftime("%Y-%m-%d %I:%M:%S %p") %>
+              <% end %>
+            <% end %>
+          </td>
+          <td class="py-2 px-4 border-b text-center"><button class="text-white px-4 py-2 rounded">|</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <br><br>
+    <h2 class="text-2xl font-semibold mb-4">Danger Zone</h2>
+    <%= button_to reset_database_path, method: :post, form: { class: "inline" }, class: "bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400" do %>
+      Reset Database
+    <% end %>
+    <br><br>
+  </div>
+  <div class="settings-right-section">
+    <div class="settings-right-top">
+      <h2 class="text-2xl font-semibold mb-4">Additional Services</h2>
+      <table>
+        <tr>
+          <td class="px-2">
+          Institution Icons<span class="tooltip-icon" data-tooltip="<%= send("institution_icons_information") %>"> ⓘ</span>
+          </td>
+          <td class="px-2">
+            <%= button_to add_institution_icons_path, method: :post, form: {class: "inline"}, class: "bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" do %>
+              Add Icons
+            <% end %>
+          </td>
+          <td class="px-2">
+            <%= button_to remove_institution_icons_path, method: :post, form: {class: "inline"}, class: "bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400" do %>
+              Remove Icons
+            <% end %>
+          </td>
+        </tr>
+      </table
+    </div>
+  </div>
+</div>
 
 <!-- Modal Structure -->
 <div id="modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50 hidden">

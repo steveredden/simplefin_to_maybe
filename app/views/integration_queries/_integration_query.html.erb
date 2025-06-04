@@ -1,0 +1,26 @@
+<div id="<%= dom_id integration_query %>" class="w-full sm:w-auto my-5 space-y-5">
+  <div>
+    <strong class="block font-medium mb-1">Account:</strong>
+    <%= integration_query.account_id %>
+  </div>
+  <div>
+    <strong class="block font-medium mb-1">Integration:</strong>
+    <%= integration_query.integration_id %>
+  </div>
+  <div>
+    <strong class="block font-medium mb-1">Name:</strong>
+    <%= integration_query.name %>
+  </div>
+  <div>
+    <strong class="block font-medium mb-1">Query params:</strong>
+    <%= integration_query.query_params %>
+  </div>
+  <div>
+    <strong class="block font-medium mb-1">Response data:</strong>
+    <%= integration_query.response_data %>
+  </div>
+  <div>
+    <strong class="block font-medium mb-1">Last executed at:</strong>
+    <%= integration_query.last_executed_at %>
+  </div>
+</div>

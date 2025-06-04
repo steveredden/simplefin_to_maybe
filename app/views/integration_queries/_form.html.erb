@@ -1,0 +1,47 @@
+<%= form_with(model: integration_query, class: "contents") do |form| %>
+  <% if integration_query.errors.any? %>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
+      <h2><%= pluralize(integration_query.errors.count, "error") %> prohibited this integration_query from being saved:</h2>
+
+      <ul class="list-disc ml-6">
+        <% integration_query.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="my-5">
+    <%= form.label :account_id %>
+    <%= form.text_field :account_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": integration_query.errors[:account_id].none?, "border-red-400 focus:outline-red-600": integration_query.errors[:account_id].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :integration_id %>
+    <%= form.text_field :integration_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": integration_query.errors[:integration_id].none?, "border-red-400 focus:outline-red-600": integration_query.errors[:integration_id].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :name %>
+    <%= form.text_field :name, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": integration_query.errors[:name].none?, "border-red-400 focus:outline-red-600": integration_query.errors[:name].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :query_params %>
+    <%= form.text_field :query_params, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": integration_query.errors[:query_params].none?, "border-red-400 focus:outline-red-600": integration_query.errors[:query_params].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :response_data %>
+    <%= form.text_field :response_data, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": integration_query.errors[:response_data].none?, "border-red-400 focus:outline-red-600": integration_query.errors[:response_data].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :last_executed_at %>
+    <%= form.datetime_field :last_executed_at, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": integration_query.errors[:last_executed_at].none?, "border-red-400 focus:outline-red-600": integration_query.errors[:last_executed_at].any?}] %>
+  </div>
+
+  <div class="inline">
+    <%= form.submit class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+  </div>
+<% end %>

@@ -1,4 +1,10 @@
 Rails.application.routes.draw do
+  resources :integrations do
+    resources :integration_queries, only: [:index, :new, :create]
+  end
+
+  resources :integration_queries, only: [:show, :edit, :update, :destroy]
+  
   resources :mortgages do
     member do
       post :sync

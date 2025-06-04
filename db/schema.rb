@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_05_28_141625) do
+ActiveRecord::Schema[7.1].define(version: 2025_05_28_183212) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -117,6 +117,27 @@ ActiveRecord::Schema[7.1].define(version: 2025_05_28_141625) do
     t.index ["scheduled_at"], name: "index_good_jobs_on_scheduled_at", where: "(finished_at IS NULL)"
   end
 
+  create_table "integration_queries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id", null: false
+    t.uuid "integration_id", null: false
+    t.string "name"
+    t.jsonb "query_params"
+    t.jsonb "response_data"
+    t.datetime "last_executed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_integration_queries_on_account_id"
+    t.index ["integration_id"], name: "index_integration_queries_on_integration_id"
+  end
+
+  create_table "integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.jsonb "credentials"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "linkages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "simplefin_account_id"
     t.uuid "maybe_account_id"
@@ -147,4 +168,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_05_28_141625) do
     t.index ["key"], name: "index_settings_on_key", unique: true
   end
 
+  add_foreign_key "integration_queries", "accounts"
+  add_foreign_key "integration_queries", "integrations"
 end
